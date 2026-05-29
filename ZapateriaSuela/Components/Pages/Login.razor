@@ -1,0 +1,173 @@
+﻿@page "/"
+
+@inject NavigationManager Navigation
+
+<PageTitle>Zapatería Suela</PageTitle>
+
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <base href="/" />
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet" />
+
+</head>
+<div class="login-container">
+
+    <div class="login-card">
+
+        <img src="images/logozapateria.jpg"
+             class="login-logo"
+             alt="Logo" />
+
+        <h1>
+            Zapatería Suela
+        </h1>
+
+   
+
+        <div class="login-form">
+
+            <div>
+
+                <label class="form-label fw-semibold">
+                    Usuario
+                </label>
+
+                <InputText class="form-control"
+                           @bind-Value="usuario" />
+
+            </div>
+
+            <div>
+
+                <label class="form-label fw-semibold">
+                    Contraseña
+                </label>
+
+                <InputText type="password"
+                           class="form-control"
+                           @bind-Value="password" />
+
+            </div>
+
+            <button class="btn btn-primary login-button"
+                    @onclick="Ingresar">
+
+                INICIAR SISTEMA DE GESTIÓN
+
+            </button>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger">
+                    @error
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+@code {
+
+    string usuario = "";
+
+    string password = "";
+
+    string error = "";
+
+    private void Ingresar()
+    {
+        if (usuario == "admin" &&
+            password == "1234")
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            error = "Usuario o contraseña incorrectos";
+        }
+    }
+}
+<style>
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: linear-gradient( rgba(0,0,0,.55), rgba(0,0,0,.55) ), url('/images/raizzapateria.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: rgba(255,255,255,.96);
+        backdrop-filter: blur(5px);
+        padding: 2rem;
+        border-radius: 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    }
+
+    .login-logo {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid #256b;
+    }
+
+    .banner-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 18px;
+    }
+
+    .login-form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+        .login-form input {
+            height: 45px;
+            border-radius: 10px;
+        }
+
+    .login-button {
+        height: 50px;
+        border-radius: 12px;
+        font-weight: bold;
+        transition: .2s ease;
+    }
+
+        .login-button:hover {
+            transform: scale(1.02);
+        }
+
+</style>

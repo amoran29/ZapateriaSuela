@@ -1,37 +1,100 @@
-.page {
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+}
+
+.layout-container {
     min-height: 100vh;
-    background-color: #f5f5f5;
+    background: linear-gradient(to bottom right, #f4f6f9, #e5e7eb);
 }
 
 .topbar {
-    background-color: #111827;
+    background: #111827;
     color: white;
-    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.logo {
-    font-size: 1.4rem;
-    font-weight: bold;
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.menu {
+.brand-logo {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,.2);
+}
+
+.brand-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.brand-subtitle {
+    margin: 0;
+    font-size: .8rem;
+    color: #d1d5db;
+}
+
+.nav-menu {
     display: flex;
     gap: 1.5rem;
 }
 
-    .menu a {
+    .nav-menu a {
         color: white;
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
+        padding-bottom: .25rem;
+        transition: .2s ease;
     }
 
-        .menu a.active {
-            border-bottom: 2px solid white;
+        .nav-menu a:hover {
+            color: #60a5fa;
+        }
+        .nav-menu a.active {
+            border-bottom: 2px solid #60a5fa;
         }
 
-.content {
+.main-content {
     padding: 2rem;
 }
+
+.card {
+    border: none;
+    border-radius: 18px;
+}
+
+.table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+
+
+
+
+
+
+

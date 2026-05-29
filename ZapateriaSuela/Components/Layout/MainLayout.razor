@@ -1,21 +1,32 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
+<div class="layout-container">
 
-    <header class="topbar">
+    <header class="topbar shadow-sm">
 
-        <div class="logo">
-            👟 Zapatería Suela
+        <div class="brand-section">
+
+            <div class="brand-logo">
+                👟
+            </div>
+
+            <div>
+                <h1 class="brand-title">
+                    Zapatería Suela
+                </h1>
+
+                <p class="brand-subtitle">
+                    Sistema de Gestión
+                </p>
+            </div>
+
         </div>
 
-        <nav class="menu">
+        <nav class="nav-menu">
 
-            <NavLink href="/" Match="NavLinkMatch.All">
+            <NavLink href="/"
+                     Match="NavLinkMatch.All">
                 Inicio
-            </NavLink>
-
-            <NavLink href="/catalogo">
-                Catálogo
             </NavLink>
 
             <NavLink href="/clientes">
@@ -25,13 +36,16 @@
             <NavLink href="/ventas">
                 Ventas
             </NavLink>
-            
+
+            <NavLink href="/catalogo">
+                Catálogo
+            </NavLink>
 
         </nav>
 
     </header>
 
-    <main class="content">
+    <main class="main-content">
         @Body
     </main>
 

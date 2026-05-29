@@ -1,7 +1,134 @@
-﻿@page "/"
+﻿@page "/dashboard"
+@using Microsoft.EntityFrameworkCore
+@using ZapateriaSuela.Data
 
-<h1>👟 Zapatería Suela</h1>
+@inject AppDbContext Context
 
-<p>
-    Bienvenido al sistema de gestión de la zapatería.
-</p>
+<PageTitle>Inicio</PageTitle>
+
+<div class="hero-section mb-5">
+
+    <div>
+        <h1 class="display-5 fw-bold">
+            👟 Bienvenido a Zapatería Suela
+        </h1>
+
+        <p class="lead text-muted mt-3">
+            Sistema profesional de gestión de clientes y ventas.
+        </p>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm p-4 dashboard-card">
+
+            <h5>
+                👥 Clientes
+            </h5>
+
+            <h1>
+                @totalClientes
+            </h1>
+
+            <p class="text-muted">
+                Clientes registrados
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm p-4 dashboard-card">
+
+            <h5>
+                🛒 Ventas
+            </h5>
+
+            <h1>
+                @totalVentas
+            </h1>
+
+            <p class="text-muted">
+                Ventas realizadas
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4 mb-4">
+
+        <div class="card shadow-sm p-4 dashboard-card">
+
+            <h5>
+                💰 Ingresos
+            </h5>
+
+            <h1>
+                $@totalIngresos
+            </h1>
+
+            <p class="text-muted">
+                Ingreso acumulado
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm p-4 mt-4">
+
+    <h3>
+        Accesos rápidos
+    </h3>
+
+    <div class="d-flex gap-3 mt-3 flex-wrap">
+
+        <a href="/clientes"
+           class="btn btn-primary">
+            Clientes
+        </a>
+
+        <a href="/ventas"
+           class="btn btn-success">
+            Ventas
+        </a>
+
+        <a href="/catalogo"
+           class="btn btn-dark">
+            Catálogo
+        </a>
+
+    </div>
+
+</div>
+
+@code {
+
+    int totalClientes;
+
+    int totalVentas;
+
+    decimal totalIngresos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalClientes =
+            await Context.Clientes.CountAsync();
+
+        totalVentas =
+            await Context.Ventas.CountAsync();
+
+        totalIngresos =
+            await Context.Ventas
+                .SumAsync(v => (decimal?)v.Total) ?? 0;
+    }
+}
