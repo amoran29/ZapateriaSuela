@@ -13,74 +13,42 @@
 <div class="card p-4 shadow-sm">
 
     <div class="mb-3">
+        <label class="form-label">Cliente</label>
 
-        <label class="form-label">
-            Cliente
-        </label>
-
-        <select class="form-select"
-                @bind="venta.ClienteId">
-
-            <option value="0">
-                Selecciona un cliente
-            </option>
+        <select class="form-select" @bind="venta.ClienteId">
+            <option value="0">Selecciona un cliente</option>
 
             @foreach (var cliente in clientes)
             {
-                <option value="@cliente.Id">
-                    @cliente.Nombre
-                </option>
+                <option value="@cliente.Id">@cliente.Nombre</option>
             }
-
         </select>
-
     </div>
 
     <div class="mb-3">
-
-        <label class="form-label">
-            Producto API ID
-        </label>
-
-        <InputNumber class="form-control"
-                     @bind-Value="productoApiId" />
-
+        <label class="form-label">Producto API ID</label>
+        <InputNumber class="form-control" @bind-Value="productoApiId" />
     </div>
 
     <div class="mb-3">
-
-        <label class="form-label">
-            Cantidad
-        </label>
-
-        <InputNumber class="form-control"
-                     @bind-Value="cantidad" />
-
+        <label class="form-label">Cantidad</label>
+        <InputNumber class="form-control" @bind-Value="cantidad" />
     </div>
 
     <div class="mb-3">
-
-        <label class="form-label">
-            Precio
-        </label>
-
-        <InputNumber class="form-control"
-                     @bind-Value="precio" />
-
+        <label class="form-label">Precio</label>
+        <InputNumber class="form-control" @bind-Value="precio" />
     </div>
 
-    <button class="btn btn-success"
-            @onclick="GuardarVenta">
-
+    <button class="btn btn-success" @onclick="GuardarVenta">
         Registrar Venta
-
     </button>
 
 </div>
 
 <hr />
 
-<h3>Historial</h3>
+<h3>Ventas</h3>
 
 @if (ventas == null)
 {
@@ -89,39 +57,154 @@
 else
 {
     <table class="table table-striped">
-
         <thead>
-
             <tr>
                 <th>Cliente</th>
                 <th>Fecha</th>
                 <th>Total</th>
                 <th>Estado</th>
+                <th>Acción</th>
             </tr>
-
         </thead>
 
         <tbody>
-
             @foreach (var v in ventas)
             {
                 <tr>
-
                     <td>@v.Cliente?.Nombre</td>
-
                     <td>@v.Fecha.ToShortDateString()</td>
-
                     <td>$@v.Total</td>
-
                     <td>@v.Estado</td>
 
+                    <td>
+                        <button class="btn btn-sm btn-warning"
+                                @onclick="() => CambiarEstadoVenta(v.Id)">
+                            Cambiar estado
+                        </button>
+                    </td>
                 </tr>
             }
-
         </tbody>
-
     </table>
 }
+
+<hr />
+
+<h3>Detalle Ventas</h3>
+
+@if (detalles == null)
+{
+    <p>Cargando detalles...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Venta ID</th>
+                <th>Producto API ID</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var d in detalles)
+            {
+                <tr>
+                    <td>@d.VentaId</td>
+                    <td>@d.ProductoApiId</td>
+                    <td>@d.Cantidad</td>
+                    <td>$@d.Precio</td>
+                    <td>$@(d.Cantidad * d.Precio)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    Venta venta = new()
+    {
+        Estado = "Completada"
+    };
+
+    List<Cliente> clientes = new();
+    List<Venta>? ventas;
+    List<DetalleVenta>? detalles;
+
+    int productoApiId;
+    int cantidad = 1;
+    decimal precio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await Context.Clientes.ToListAsync();
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        ventas = await Context.Ventas
+            .Include(v => v.Cliente)
+            .ToListAsync();
+
+        detalles = await Context.DetalleVentas.ToListAsync();
+    }
+
+    private async Task GuardarVenta()
+    {
+        var nuevaVenta = new Venta
+        {
+            ClienteId = venta.ClienteId,
+            Fecha = DateTime.Now,
+            Estado = "Completada",
+            Total = cantidad * precio
+        };
+
+        Context.Ventas.Add(nuevaVenta);
+        await Context.SaveChangesAsync();
+
+        var detalle = new DetalleVenta
+        {
+            VentaId = nuevaVenta.Id,
+            ProductoApiId = productoApiId,
+            Cantidad = cantidad,
+            Precio = precio
+        };
+
+        Context.DetalleVentas.Add(detalle);
+        await Context.SaveChangesAsync();
+
+        productoApiId = 0;
+        cantidad = 1;
+        precio = 0;
+
+        venta = new Venta();
+
+        await CargarDatos();
+    }
+
+    private async Task CambiarEstadoVenta(int id)
+    {
+        var ventaDb = await Context.Ventas.FindAsync(id);
+
+        if (ventaDb != null)
+        {
+            ventaDb.Estado =
+                ventaDb.Estado == "Completada"
+                    ? "Cancelada"
+                    : "Completada";
+
+            await Context.SaveChangesAsync();
+            await CargarDatos();
+        }
+    }
+}
+
+        
 <style>
     body {
         background: #121212;
@@ -130,21 +213,15 @@ else
 
     h1, h3 {
         text-align: center;
-        color: #fff;
         margin-bottom: 20px;
+        color: #fff;
     }
 
-    hr {
-        border: 1px solid #333;
-    }
-
-    /* CONTENEDOR PRINCIPAL (FLEXBOX) */
     .card {
         max-width: 600px;
         margin: 0 auto;
         background: #1e1e1e;
         border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         padding: 20px;
         color: #fff;
     }
@@ -170,13 +247,6 @@ else
         color: #fff;
     }
 
-        .form-select:focus,
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 5px #007bff;
-        }
-
     .btn-success {
         width: 100%;
         padding: 10px;
@@ -185,108 +255,24 @@ else
         border: 1px solid #444;
         border-radius: 6px;
         cursor: pointer;
-        margin-top: 10px;
     }
 
-        .btn-success:hover {
-            background: #222;
-        }
-
-    /* TABLA */
     .table {
         width: 90%;
-        max-width: 900px;
         margin: 0 auto;
-        border-collapse: collapse;
-        background: #fff;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        background: #1e1e1e;
+        color: #fff;
         border-radius: 10px;
         overflow: hidden;
-        color: #fff;
     }
-
-        .table th, .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-        }
 
         .table th {
             background: #111;
             color: #fff;
         }
 
-        .table tr:hover {
-            background: #fff;
+        .table td {
+            color: #fff;
         }
+        </style>
 
-    p {
-        text-align: center;
-        color: #aaa;
-    }
-</style>
-
-@code {
-
-    Venta venta = new()
-    {
-        Estado = "Completada"
-    };
-
-    List<Cliente> clientes = new();
-
-    List<Venta>? ventas;
-
-    int productoApiId;
-
-    int cantidad = 1;
-
-    decimal precio;
-
-    protected override async Task OnInitializedAsync()
-    {
-        clientes =
-            await Context.Clientes.ToListAsync();
-
-        await CargarVentas();
-    }
-
-    private async Task CargarVentas()
-    {
-        ventas = await Context.Ventas
-            .Include(v => v.Cliente)
-            .ToListAsync();
-    }
-
-    private async Task GuardarVenta()
-    {
-        venta.Total = cantidad * precio;
-
-        Context.Ventas.Add(venta);
-
-        await Context.SaveChangesAsync();
-
-        var detalle = new DetalleVenta
-        {
-            VentaId = venta.Id,
-            ProductoApiId = productoApiId,
-            Cantidad = cantidad,
-            Precio = precio
-        };
-
-        Context.DetalleVentas.Add(detalle);
-
-        await Context.SaveChangesAsync();
-
-        venta = new Venta
-        {
-            Estado = "Completada"
-        };
-
-        productoApiId = 0;
-        cantidad = 1;
-        precio = 0;
-
-        await CargarVentas();
-    }
-}
