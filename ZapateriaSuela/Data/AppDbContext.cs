@@ -17,5 +17,7 @@ namespace ZapateriaSuela.Data
 
         public DbSet<DetalleVenta> DetalleVentas
             => Set<DetalleVenta>();
+
+        public DbSet<Trabajador> Trabajadores => Set<Trabajador>();
     }
 }

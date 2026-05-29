@@ -7,90 +7,78 @@
 
 <h1>CATÁLOGO</h1>
 
-@if (productos == null)
+@if (productos == null || categorias == null)
 {
-    <p>Cargando catálogo...</p>
+    <div class="text-center p-5">
+        <p>Cargando catálogo y categorías...</p>
+    </div>
 }
 else
 {
-    <div class="mb-4">
-
-        <label class="form-label">
-            Filtrar por categoría
-        </label>
-
-        <select class="form-select"
-                @onchange="FiltrarCategoria">
-
-            <option value="0">
-                Todas
-            </option>
-
+    <div class="mb-4" style="max-width: 300px;">
+        <label class="form-label fw-bold">Filtrar por categoría</label>
+        <select class="form-select" @onchange="FiltrarCategoria">
+            <option value="0">Todas las categorías</option>
             @foreach (var categoria in categorias)
             {
-                <option value="@categoria.Id">
-                    @categoria.Nombre
-                </option>
+                <option value="@categoria.Id">@categoria.Nombre</option>
             }
-
         </select>
-
     </div>
 
     <div class="row">
-
-        @foreach (var producto in productos)
+        @if (!productos.Any())
         {
-            <div class="col-md-4 mb-4">
-
-                <div class="card shadow-sm p-3 h-100">
-
-                    <h4>@producto.Nombre</h4>
-
-                    <p>@producto.Descripcion</p>
-
-                    <h5>
-                        $@producto.Precio
-                    </h5>
-
-                </div>
-
+            <div class="col-12">
+                <p class="text-muted">No hay zapatos disponibles en esta categoría.</p>
             </div>
         }
-
+        else
+        {
+            @foreach (var producto in productos)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm p-3 h-100">
+                        <h4 class="text-primary">@producto.Nombre</h4>
+                        <p class="text-secondary">@producto.Descripcion</p>
+                        <h5 class="fw-bold text-success">
+                            @producto.Precio.ToString("C")
+                        </h5>
+                    </div>
+                </div>
+            }
+        }
     </div>
 }
 
 @code {
-
-    List<ProductoApi>? productos;
-
-    List<CategoriaApi> categorias = new();
+    // Es mejor inicializarlas como listas vacías o dejarlas como null para el control del IF
+    private List<ProductoApi>? productos;
+    private List<CategoriaApi>? categorias;
 
     protected override async Task OnInitializedAsync()
     {
-        productos =
-            await ApiService.ObtenerProductos();
+        // Ejecutamos ambas peticiones al mismo tiempo para que cargue más rápido
+        var tareaProductos = ApiService.ObtenerProductos();
+        var tareaCategorias = ApiService.ObtenerCategorias();
 
-        categorias =
-            await ApiService.ObtenerCategorias();
+        await Task.WhenAll(tareaProductos, tareaCategorias);
+
+        productos = await tareaProductos;
+        categorias = await tareaCategorias;
     }
 
     private async Task FiltrarCategoria(ChangeEventArgs e)
     {
-        int categoriaId =
-            int.Parse(e.Value?.ToString() ?? "0");
+        int categoriaId = int.Parse(e.Value?.ToString() ?? "0");
 
         if (categoriaId == 0)
         {
-            productos =
-                await ApiService.ObtenerProductos();
+            productos = await ApiService.ObtenerProductos();
         }
         else
         {
-            productos =
-                await ApiService
-                    .ObtenerProductosPorCategoria(categoriaId);
+            productos = await ApiService.ObtenerProductosPorCategoria(categoriaId);
         }
     }
 }

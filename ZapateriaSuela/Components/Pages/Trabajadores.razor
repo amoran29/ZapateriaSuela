@@ -1,0 +1,295 @@
+﻿@page "/trabajadores"
+
+@using Microsoft.EntityFrameworkCore
+@using ZapateriaSuela.Data
+@using ZapateriaSuela.Models
+
+@inject AppDbContext Context
+
+<h1 class="title">TRABAJADORES</h1>
+
+<hr />
+
+<div class="container">
+
+    <div class="form-box">
+
+        <EditForm Model="trabajador" OnValidSubmit="GuardarTrabajador">
+
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label>Nombre</label>
+                <InputText class="input" @bind-Value="trabajador.Nombre" />
+            </div>
+
+            <div class="form-group">
+                <label>Puesto</label>
+
+                <select class="input" @bind="trabajador.Puesto">
+                    <option value="">Selecciona puesto</option>
+                    <option value="Atencion">Atención a cliente</option>
+                    <option value="Cajero">Cajero</option>
+                    <option value="Gerente">Gerente</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Horas trabajadas</label>
+                <InputNumber class="input" @bind-Value="trabajador.HorasTrabajadas" />
+            </div>
+
+<button type="submit" class="btn-save">
+    Guardar Trabajador
+</button>
+
+        </EditForm>
+
+    </div>
+
+</div>
+
+<hr />
+
+@if (trabajadores == null)
+{
+    <p>Cargando trabajadores...</p>
+}
+else
+{
+    <div class="table-container">
+
+        <table class="table">
+
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Puesto</th>
+                    <th>Horas</th>
+                    <th>Sueldo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach (var t in trabajadores)
+                {
+                    <tr>
+                        <td>@t.Nombre</td>
+                        <td>@t.Puesto</td>
+                        <td>@t.HorasTrabajadas</td>
+                        <td>$@t.Sueldo</td>
+
+                        <td class="actions">
+
+                            <button class="btn-edit"
+                                    @onclick="() => EditarTrabajador(t)">
+                                Editar
+                            </button>
+
+                            <button class="btn-delete"
+                                    @onclick="() => EliminarTrabajador(t.Id)">
+                                Eliminar
+                            </button>
+
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+}
+
+<style>
+    body {
+        background: #121212;
+        color: #fff;
+    }
+
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-box {
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        background: #1e1e1e;
+        color: #fff;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
+
+    label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #e0e0e0;
+    }
+
+    .input {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #2a2a2a;
+        color: #fff;
+    }
+
+    .btn-save {
+        width: 100%;
+        padding: 10px;
+        background: #000;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+        .btn-save:hover {
+            background: #222;
+        }
+
+    .table-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .table {
+        width: 90%;
+        max-width: 900px;
+        border-collapse: collapse;
+        background: #1e1e1e;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        border-radius: 10px;
+        overflow: hidden;
+        color: #fff;
+    }
+
+        .table th, .table td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        .table th {
+            background: #111;
+        }
+
+        .table tr:hover {
+            background: #2a2a2a;
+        }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-edit {
+        padding: 6px 10px;
+        background: #444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+
+    .btn-delete {
+        padding: 6px 10px;
+        background: #000;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 5px;
+    }
+</style>
+
+@code {
+
+    Trabajador trabajador = new();
+    List<Trabajador>? trabajadores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTrabajadores();
+    }
+
+    private async Task CargarTrabajadores()
+    {
+        trabajadores = await Context.Set<Trabajador>().ToListAsync();
+    }
+
+    private async Task GuardarTrabajador()
+    {
+        // calcular sueldo
+        trabajador.PagoPorHora = trabajador.Puesto switch
+        {
+            "Atencion" => 50,
+            "Cajero" => 80,
+            "Gerente" => 120,
+            _ => 0
+        };
+
+        trabajador.Sueldo = trabajador.PagoPorHora * trabajador.HorasTrabajadas;
+
+        if (trabajador.Id == 0)
+        {
+            Context.Add(trabajador);
+        }
+        else
+        {
+            var db = await Context.Set<Trabajador>().FindAsync(trabajador.Id);
+
+            if (db != null)
+            {
+                db.Nombre = trabajador.Nombre;
+                db.Puesto = trabajador.Puesto;
+                db.HorasTrabajadas = trabajador.HorasTrabajadas;
+                db.PagoPorHora = trabajador.PagoPorHora;
+                db.Sueldo = trabajador.Sueldo;
+            }
+        }
+
+        await Context.SaveChangesAsync();
+
+        trabajador = new();
+        await CargarTrabajadores();
+    }
+
+    private void EditarTrabajador(Trabajador t)
+    {
+        trabajador = new Trabajador
+        {
+            Id = t.Id,
+            Nombre = t.Nombre,
+            Puesto = t.Puesto,
+            HorasTrabajadas = t.HorasTrabajadas
+        };
+    }
+
+    private async Task EliminarTrabajador(int id)
+    {
+        var t = await Context.Set<Trabajador>().FindAsync(id);
+
+        if (t != null)
+        {
+            Context.Remove(t);
+            await Context.SaveChangesAsync();
+            await CargarTrabajadores();
+        }
+    }
+}
