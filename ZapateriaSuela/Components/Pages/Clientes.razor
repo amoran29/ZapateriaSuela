@@ -5,121 +5,183 @@
 @using ZapateriaSuela.Models
 
 @inject AppDbContext Context
+@inject NavigationManager Nav
 
-<h1>👥 Clientes</h1>
+<style>
 
-<hr />
+    .clientes-container {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
 
-<EditForm Model="cliente"
-          OnValidSubmit="GuardarCliente">
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
 
-    <DataAnnotationsValidator />
+    .clientes-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffff;
+    }
 
-    <ValidationSummary />
+    .actions-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
-    <div class="mb-3">
+    .search-box {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        width: 250px;
+    }
 
-        <label class="form-label">
-            Nombre
-        </label>
+    .form-card, .table-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
 
-        <InputText class="form-control"
-                   @bind-Value="cliente.Nombre" />
+    table td, table th {
+        color: #111827;
+    }
+
+</style>
+
+<div class="clientes-container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+
+        <h1 class="clientes-title">CLIENTES</h1>
+
+        <div class="actions-bar">
+
+            <input class="search-box"
+                   placeholder="Buscar cliente..."
+                   @bind="textoBusqueda"
+                   @bind:event="oninput"
+                   @bind:after="FiltrarClientes" />
+            <button class="btn btn-secondary"
+                    @onclick="IrInicio">
+                VOLVER 
+            </button>
+
+        </div>
 
     </div>
 
-    <div class="mb-3">
+    <!-- FORM -->
+    <div class="form-card">
 
-        <label class="form-label">
-            Teléfono
-        </label>
+        <EditForm Model="cliente" OnValidSubmit="GuardarCliente">
 
-        <InputText class="form-control"
-                   @bind-Value="cliente.Telefono" />
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row">
+
+                <div class="col-md-4 mb-2">
+                    <InputText class="form-control"
+                               placeholder="Nombre"
+                               @bind-Value="cliente.Nombre" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <InputText class="form-control"
+                               placeholder="Teléfono"
+                               @bind-Value="cliente.Telefono" />
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <InputText class="form-control"
+                               placeholder="Email"
+                               @bind-Value="cliente.Email" />
+                </div>
+
+            </div>
+
+            <button class="btn btn-primary mt-2">
+                Guardar Cliente
+            </button>
+
+        </EditForm>
 
     </div>
 
-    <div class="mb-3">
+    <!-- TABLE -->
+    <div class="table-card">
 
-        <label class="form-label">
-            Email
-        </label>
+        @if (clientesFiltrados == null)
+        {
+            <p>Cargando clientes...</p>
+        }
+        else if (!clientesFiltrados.Any())
+        {
+            <p>No se encontraron clientes.</p>
+        }
+        else
+        {
+            <table class="table table-hover">
 
-        <InputText class="form-control"
-                   @bind-Value="cliente.Email" />
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var c in clientesFiltrados)
+                    {
+                        <tr>
+                            <td>@c.Nombre</td>
+                            <td>@c.Telefono</td>
+                            <td>@c.Email</td>
+                            <td>
+
+                                <button class="btn btn-warning btn-sm me-2"
+                                        @onclick="() => EditarCliente(c)">
+                                    Editar
+                                </button>
+
+                                <button class="btn btn-danger btn-sm"
+                                        @onclick="() => EliminarCliente(c.Id)">
+                                    Eliminar
+                                </button>
+
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+        }
 
     </div>
 
-    <button class="btn btn-primary">
-        Guardar Cliente
-    </button>
-
-</EditForm>
-
-<hr />
-
-@if (clientes == null)
-{
-    <p>Cargando clientes...</p>
-}
-else
-{
-    <table class="table table-striped">
-
-        <thead>
-
-            <tr>
-                <th>Nombre</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th></th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @foreach (var c in clientes)
-            {
-                <tr>
-
-                    <td>@c.Nombre</td>
-
-                    <td>@c.Telefono</td>
-
-                    <td>@c.Email</td>
-
-                    <td>
-
-                        <button class="btn btn-warning btn-sm me-2"
-                                @onclick="() => EditarCliente(c)">
-
-                            Editar
-
-                        </button>
-
-                        <button class="btn btn-danger btn-sm"
-                                @onclick="() => EliminarCliente(c.Id)">
-
-                            Eliminar
-
-                        </button>
-
-                    </td>
-
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-}
+</div>
 
 @code {
 
     Cliente cliente = new();
 
     List<Cliente>? clientes;
+    List<Cliente>? clientesFiltrados;
+
+    string textoBusqueda = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,12 +191,36 @@ else
     private async Task CargarClientes()
     {
         clientes = await Context.Clientes.ToListAsync();
+        clientesFiltrados = clientes;
+    }
+
+    private void FiltrarClientes()
+    {
+        if (clientes == null) return;
+
+        var texto = textoBusqueda?.ToLower() ?? "";
+
+        clientesFiltrados = string.IsNullOrWhiteSpace(texto)
+            ? clientes
+            : clientes.Where(c =>
+                (c.Nombre ?? "").ToLower().Contains(texto) ||
+                (c.Telefono ?? "").ToLower().Contains(texto) ||
+                (c.Email ?? "").ToLower().Contains(texto)
+            ).ToList();
     }
     private async Task GuardarCliente()
     {
-        if (cliente.Id == 0)
+        var clienteExistente = await Context.Clientes.FindAsync(cliente.Id);
+
+        if (clienteExistente == null)
         {
             Context.Clientes.Add(cliente);
+        }
+        else
+        {
+            clienteExistente.Nombre = cliente.Nombre;
+            clienteExistente.Telefono = cliente.Telefono;
+            clienteExistente.Email = cliente.Email;
         }
 
         await Context.SaveChangesAsync();
@@ -144,23 +230,31 @@ else
         await CargarClientes();
     }
 
-   private void EditarCliente(Cliente c)
-{
-    cliente = c;
-}
-    
+    private void EditarCliente(Cliente c)
+    {
+        cliente = new Cliente
+        {
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Telefono = c.Telefono,
+            Email = c.Email
+        };
+    }
+
     private async Task EliminarCliente(int id)
     {
-        var clienteEliminar =
-            await Context.Clientes.FindAsync(id);
+        var clienteEliminar = await Context.Clientes.FindAsync(id);
 
         if (clienteEliminar != null)
         {
             Context.Clientes.Remove(clienteEliminar);
-
             await Context.SaveChangesAsync();
-
             await CargarClientes();
         }
+    }
+
+    private void IrInicio()
+    {
+        Nav.NavigateTo("/home");
     }
 }
