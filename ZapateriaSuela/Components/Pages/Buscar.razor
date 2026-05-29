@@ -1,0 +1,147 @@
+﻿@page "/buscar"
+
+@using Microsoft.EntityFrameworkCore
+@using ZapateriaSuela.Data
+@using ZapateriaSuela.Models
+
+@inject AppDbContext Context
+
+<h1 class="title">BUSCAR</h1>
+
+<hr />
+
+<div class="search-box">
+
+    <input class="input"
+           placeholder="Escribe tu búsqueda..."
+           @bind="texto"
+           @bind:event="oninput" />
+
+    <select class="input" @bind="tipo">
+        <option value="todos">Todos</option>
+        <option value="clientes">Clientes</option>
+        <option value="trabajadores">Trabajadores</option>
+        <option value="ventas">Ventas</option>
+    </select>
+
+    <button class="btn-save" @onclick="EjecutarBusqueda">
+        Buscar
+    </button>
+
+</div>
+
+<hr />
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    @if (tipo == "todos" || tipo == "clientes")
+    {
+        <h3>Clientes</h3>
+
+        @if (clientes.Any())
+        {
+            <ul>
+                @foreach (var c in clientes)
+                {
+                    <li>@c.Nombre - @c.Email</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Sin resultados</p>
+        }
+    }
+
+    @if (tipo == "todos" || tipo == "trabajadores")
+    {
+        <h3>Trabajadores</h3>
+
+        @if (trabajadores.Any())
+        {
+            <ul>
+                @foreach (var t in trabajadores)
+                {
+                    <li>@t.Nombre - @t.Puesto</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Sin resultados</p>
+        }
+    }
+
+    @if (tipo == "todos" || tipo == "ventas")
+    {
+        <h3>Ventas</h3>
+
+        @if (ventas.Any())
+        {
+            <ul>
+                @foreach (var v in ventas)
+                {
+                    <li>
+                        @v.Cliente.Nombre - $@v.Total - @v.Fecha.ToShortDateString()
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Sin resultados</p>
+        }
+    }
+}
+@code {
+
+    string texto = "";
+    string tipo = "todos";
+    bool cargando = false;
+
+    List<Cliente> clientes = new();
+    List<Trabajador> trabajadores = new();
+    List<Venta> ventas = new();
+
+    private async Task EjecutarBusqueda()
+    {
+        cargando = true;
+
+        if (string.IsNullOrWhiteSpace(texto))
+        {
+            clientes.Clear();
+            trabajadores.Clear();
+            ventas.Clear();
+            cargando = false;
+            return;
+        }
+
+        if (tipo == "todos" || tipo == "clientes")
+        {
+            clientes = await Context.Clientes
+                .Where(c => c.Nombre.Contains(texto))
+                .ToListAsync();
+        }
+
+        if (tipo == "todos" || tipo == "trabajadores")
+        {
+            trabajadores = await Context.Trabajadores
+                .Where(t => t.Nombre.Contains(texto))
+                .ToListAsync();
+        }
+
+        if (tipo == "todos" || tipo == "ventas")
+        {
+            ventas = await Context.Ventas
+                .Include(v => v.Cliente)
+                .Where(v => v.Cliente.Nombre.Contains(texto))
+                .ToListAsync();
+        }
+
+        cargando = false;
+    }
+}
