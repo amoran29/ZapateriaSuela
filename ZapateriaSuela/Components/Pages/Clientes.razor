@@ -130,36 +130,25 @@ else
     {
         clientes = await Context.Clientes.ToListAsync();
     }
-
     private async Task GuardarCliente()
     {
         if (cliente.Id == 0)
         {
             Context.Clientes.Add(cliente);
         }
-        else
-        {
-            Context.Clientes.Update(cliente);
-        }
 
         await Context.SaveChangesAsync();
 
-        cliente = new();
+        cliente = new Cliente();
 
         await CargarClientes();
     }
 
-    private void EditarCliente(Cliente c)
-    {
-        cliente = new Cliente
-        {
-            Id = c.Id,
-            Nombre = c.Nombre,
-            Telefono = c.Telefono,
-            Email = c.Email
-        };
-    }
-
+   private void EditarCliente(Cliente c)
+{
+    cliente = c;
+}
+    
     private async Task EliminarCliente(int id)
     {
         var clienteEliminar =
