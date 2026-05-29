@@ -6,104 +6,131 @@
 
 <PageTitle>Inicio</PageTitle>
 
-<div class="hero-section mb-5">
+<style>
 
-    <div>
-        <h1 class="display-5 fw-bold">
-            👟 Bienvenido a Zapatería Suela
+    .dashboard-container {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        color: #ffff;
+    }
+
+    .hero-section {
+        max-width: 800px;
+        margin-bottom: 40px;
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffff;
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.2rem;
+        color: #fff;
+    }
+
+    .stats-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .dashboard-card {
+        flex: 1;
+        min-width: 220px;
+        border-radius: 15px;
+        text-align: center;
+        background: rgba(255,255,255,0.95);
+        border: none;
+        transition: transform 0.2s ease;
+        color: #111827;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dashboard-card h1 {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .dashboard-card h5 {
+            color: #111827; 
+            font-weight: 600;
+        }
+
+        .dashboard-card p {
+            color: #374151; 
+        }
+
+    .quick-actions {
+        margin-top: 40px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+</style>
+
+<div class="dashboard-container">
+
+    <div class="hero-section">
+
+        <h1 class="dashboard-title">
+            BIENVENIDO AL SISTEMA DE GESTIÓN DE ZAPATERÍA SUELA
         </h1>
 
-        <p class="lead text-muted mt-3">
+        <p class="dashboard-subtitle">
             Sistema profesional de gestión de clientes y ventas.
         </p>
+
     </div>
 
-</div>
-
-<div class="row">
-
-    <div class="col-md-4 mb-4">
+    <div class="stats-container">
 
         <div class="card shadow-sm p-4 dashboard-card">
+            <h5>CLIENTES</h5>
+            <h1>@totalClientes</h1>
+            <p>Clientes registrados</p>
+        </div>
 
-            <h5>
-                👥 Clientes
-            </h5>
+        <div class="card shadow-sm p-4 dashboard-card">
+            <h5>VENTAS</h5>
+            <h1>@totalVentas</h1>
+            <p>Ventas realizadas</p>
+        </div>
 
-            <h1>
-                @totalClientes
-            </h1>
-
-            <p class="text-muted">
-                Clientes registrados
-            </p>
-
+        <div class="card shadow-sm p-4 dashboard-card">
+            <h5> INGRESOS REGISTRADOS</h5>
+            <h1>$@totalIngresos</h1>
+            <p>Ingreso acumulado</p>
         </div>
 
     </div>
 
-    <div class="col-md-4 mb-4">
+    <div class="quick-actions">
 
-        <div class="card shadow-sm p-4 dashboard-card">
-
-            <h5>
-                🛒 Ventas
-            </h5>
-
-            <h1>
-                @totalVentas
-            </h1>
-
-            <p class="text-muted">
-                Ventas realizadas
-            </p>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-4 mb-4">
-
-        <div class="card shadow-sm p-4 dashboard-card">
-
-            <h5>
-                💰 Ingresos
-            </h5>
-
-            <h1>
-                $@totalIngresos
-            </h1>
-
-            <p class="text-muted">
-                Ingreso acumulado
-            </p>
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="card shadow-sm p-4 mt-4">
-
-    <h3>
-        Accesos rápidos
-    </h3>
-
-    <div class="d-flex gap-3 mt-3 flex-wrap">
-
-        <a href="/clientes"
-           class="btn btn-primary">
+        <a href="/clientes" class="btn btn-primary">
             Clientes
         </a>
 
-        <a href="/ventas"
-           class="btn btn-success">
+        <a href="/ventas" class="btn btn-success">
             Ventas
         </a>
 
-        <a href="/catalogo"
-           class="btn btn-dark">
+        <a href="/catalogo" class="btn btn-dark">
             Catálogo
         </a>
 
@@ -114,21 +141,13 @@
 @code {
 
     int totalClientes;
-
     int totalVentas;
-
     decimal totalIngresos;
 
     protected override async Task OnInitializedAsync()
     {
-        totalClientes =
-            await Context.Clientes.CountAsync();
-
-        totalVentas =
-            await Context.Ventas.CountAsync();
-
-        totalIngresos =
-            await Context.Ventas
-                .SumAsync(v => (decimal?)v.Total) ?? 0;
+        totalClientes = await Context.Clientes.CountAsync();
+        totalVentas = await Context.Ventas.CountAsync();
+        totalIngresos = await Context.Ventas.SumAsync(v => (decimal?)v.Total) ?? 0;
     }
 }
