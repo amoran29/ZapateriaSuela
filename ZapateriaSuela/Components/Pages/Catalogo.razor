@@ -1,0 +1,96 @@
+﻿@page "/catalogo"
+
+@using ZapateriaSuela.Models
+@using ZapateriaSuela.Services
+
+@inject ApiComercioService ApiService
+
+<h1>👟 Catálogo</h1>
+
+@if (productos == null)
+{
+    <p>Cargando catálogo...</p>
+}
+else
+{
+    <div class="mb-4">
+
+        <label class="form-label">
+            Filtrar por categoría
+        </label>
+
+        <select class="form-select"
+                @onchange="FiltrarCategoria">
+
+            <option value="0">
+                Todas
+            </option>
+
+            @foreach (var categoria in categorias)
+            {
+                <option value="@categoria.Id">
+                    @categoria.Nombre
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    <div class="row">
+
+        @foreach (var producto in productos)
+        {
+            <div class="col-md-4 mb-4">
+
+                <div class="card shadow-sm p-3 h-100">
+
+                    <h4>@producto.Nombre</h4>
+
+                    <p>@producto.Descripcion</p>
+
+                    <h5>
+                        $@producto.Precio
+                    </h5>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
+
+@code {
+
+    List<ProductoApi>? productos;
+
+    List<CategoriaApi> categorias = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos =
+            await ApiService.ObtenerProductos();
+
+        categorias =
+            await ApiService.ObtenerCategorias();
+    }
+
+    private async Task FiltrarCategoria(ChangeEventArgs e)
+    {
+        int categoriaId =
+            int.Parse(e.Value?.ToString() ?? "0");
+
+        if (categoriaId == 0)
+        {
+            productos =
+                await ApiService.ObtenerProductos();
+        }
+        else
+        {
+            productos =
+                await ApiService
+                    .ObtenerProductosPorCategoria(categoriaId);
+        }
+    }
+}

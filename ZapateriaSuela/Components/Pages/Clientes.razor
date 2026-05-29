@@ -1,0 +1,177 @@
+﻿@page "/clientes"
+
+@using Microsoft.EntityFrameworkCore
+@using ZapateriaSuela.Data
+@using ZapateriaSuela.Models
+
+@inject AppDbContext Context
+
+<h1>👥 Clientes</h1>
+
+<hr />
+
+<EditForm Model="cliente"
+          OnValidSubmit="GuardarCliente">
+
+    <DataAnnotationsValidator />
+
+    <ValidationSummary />
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Nombre
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="cliente.Nombre" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Teléfono
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="cliente.Telefono" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Email
+        </label>
+
+        <InputText class="form-control"
+                   @bind-Value="cliente.Email" />
+
+    </div>
+
+    <button class="btn btn-primary">
+        Guardar Cliente
+    </button>
+
+</EditForm>
+
+<hr />
+
+@if (clientes == null)
+{
+    <p>Cargando clientes...</p>
+}
+else
+{
+    <table class="table table-striped">
+
+        <thead>
+
+            <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var c in clientes)
+            {
+                <tr>
+
+                    <td>@c.Nombre</td>
+
+                    <td>@c.Telefono</td>
+
+                    <td>@c.Email</td>
+
+                    <td>
+
+                        <button class="btn btn-warning btn-sm me-2"
+                                @onclick="() => EditarCliente(c)">
+
+                            Editar
+
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                                @onclick="() => EliminarCliente(c.Id)">
+
+                            Eliminar
+
+                        </button>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+}
+
+@code {
+
+    Cliente cliente = new();
+
+    List<Cliente>? clientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    private async Task CargarClientes()
+    {
+        clientes = await Context.Clientes.ToListAsync();
+    }
+
+    private async Task GuardarCliente()
+    {
+        if (cliente.Id == 0)
+        {
+            Context.Clientes.Add(cliente);
+        }
+        else
+        {
+            Context.Clientes.Update(cliente);
+        }
+
+        await Context.SaveChangesAsync();
+
+        cliente = new();
+
+        await CargarClientes();
+    }
+
+    private void EditarCliente(Cliente c)
+    {
+        cliente = new Cliente
+        {
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Telefono = c.Telefono,
+            Email = c.Email
+        };
+    }
+
+    private async Task EliminarCliente(int id)
+    {
+        var clienteEliminar =
+            await Context.Clientes.FindAsync(id);
+
+        if (clienteEliminar != null)
+        {
+            Context.Clientes.Remove(clienteEliminar);
+
+            await Context.SaveChangesAsync();
+
+            await CargarClientes();
+        }
+    }
+}
