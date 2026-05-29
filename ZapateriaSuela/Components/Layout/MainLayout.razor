@@ -1,52 +1,60 @@
 ﻿@inherits LayoutComponentBase
 
+
 <div class="layout-container">
 
-    <header class="topbar shadow-sm">
+    <div class="layout-overlay">
 
-        <div class="brand-section">
+        <header class="topbar">
 
-            <div class="brand-logo">
-                👟
+            <div class="brand-section">
+
+               
+                <img src="images/logozapateria.jpg"
+                     alt="Logo"
+                     class="brand-logo" />
+
+                <div class="brand-text">
+
+                    <h1 class="brand-title">
+                        Zapatería Suela
+                    </h1>
+
+                    <p class="brand-subtitle">
+                        Sistema de Gestión
+                    </p>
+
+                </div>
+
             </div>
 
-            <div>
-                <h1 class="brand-title">
-                    Zapatería Suela
-                </h1>
+            <nav class="nav-menu">
 
-                <p class="brand-subtitle">
-                    Sistema de Gestión
-                </p>
-            </div>
+                <NavLink href="/"
+                         Match="NavLinkMatch.All">
+                    Inicio
+                </NavLink>
 
-        </div>
+                <NavLink href="/clientes">
+                    Clientes
+                </NavLink>
 
-        <nav class="nav-menu">
+                <NavLink href="/ventas">
+                    Ventas
+                </NavLink>
 
-            <NavLink href="/"
-                     Match="NavLinkMatch.All">
-                Inicio
-            </NavLink>
+                <NavLink href="/catalogo">
+                    Catálogo
+                </NavLink>
 
-            <NavLink href="/clientes">
-                Clientes
-            </NavLink>
+            </nav>
 
-            <NavLink href="/ventas">
-                Ventas
-            </NavLink>
+        </header>
 
-            <NavLink href="/catalogo">
-                Catálogo
-            </NavLink>
+        <main class="main-content">
+            @Body
+        </main>
 
-        </nav>
-
-    </header>
-
-    <main class="main-content">
-        @Body
-    </main>
+    </div>
 
 </div>
