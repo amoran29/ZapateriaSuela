@@ -15,24 +15,24 @@ Productos por categoría:
 https://api-udec-pweb-aedec9hxbugye0am.westus3-01.azurewebsites.net/api/comercio/productos/categoria/{id}
 
 ## 🔐 Login
-![Login](images/login.jpg)
+![Login](wwwroot/images/login.jpg)
 
 ---
 
 ## 🏠 Inicio
-![Home](images/home.jpg)
+![Home](wwwroot/images/home.jpg)
 
 ---
 
 ## 👤 Clientes
-![Clientes](images/Clientes.jpg)
+![Clientes](wwwroot/images/Clientes.jpg)
 
 ---
 
 ## 👷 Trabajadores
-![Trabajadores](images/Trabajadores.jpg)
+![Trabajadores](wwwroot/images/Trabajadores.jpg)
 
 ---
 
 ## 🛒 Ventas
-![Ventas](images/Ventas.jpg)
+![Ventas](wwwroot/images/Ventas.jpg)
