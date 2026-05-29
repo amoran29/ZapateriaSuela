@@ -1,0 +1,189 @@
+﻿@page "/ventas"
+
+@using Microsoft.EntityFrameworkCore
+@using ZapateriaSuela.Data
+@using ZapateriaSuela.Models
+
+@inject AppDbContext Context
+
+<h1>🛒 Registro de Ventas</h1>
+
+<hr />
+
+<div class="card p-4 shadow-sm">
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Cliente
+        </label>
+
+        <select class="form-select"
+                @bind="venta.ClienteId">
+
+            <option value="0">
+                Selecciona un cliente
+            </option>
+
+            @foreach (var cliente in clientes)
+            {
+                <option value="@cliente.Id">
+                    @cliente.Nombre
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Producto API ID
+        </label>
+
+        <InputNumber class="form-control"
+                     @bind-Value="productoApiId" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Cantidad
+        </label>
+
+        <InputNumber class="form-control"
+                     @bind-Value="cantidad" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label class="form-label">
+            Precio
+        </label>
+
+        <InputNumber class="form-control"
+                     @bind-Value="precio" />
+
+    </div>
+
+    <button class="btn btn-success"
+            @onclick="GuardarVenta">
+
+        Registrar Venta
+
+    </button>
+
+</div>
+
+<hr />
+
+<h3>Historial</h3>
+
+@if (ventas == null)
+{
+    <p>Cargando ventas...</p>
+}
+else
+{
+    <table class="table table-striped">
+
+        <thead>
+
+            <tr>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var v in ventas)
+            {
+                <tr>
+
+                    <td>@v.Cliente?.Nombre</td>
+
+                    <td>@v.Fecha.ToShortDateString()</td>
+
+                    <td>$@v.Total</td>
+
+                    <td>@v.Estado</td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+}
+
+@code {
+
+    Venta venta = new()
+    {
+        Estado = "Completada"
+    };
+
+    List<Cliente> clientes = new();
+
+    List<Venta>? ventas;
+
+    int productoApiId;
+
+    int cantidad = 1;
+
+    decimal precio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes =
+            await Context.Clientes.ToListAsync();
+
+        await CargarVentas();
+    }
+
+    private async Task CargarVentas()
+    {
+        ventas = await Context.Ventas
+            .Include(v => v.Cliente)
+            .ToListAsync();
+    }
+
+    private async Task GuardarVenta()
+    {
+        venta.Total = cantidad * precio;
+
+        Context.Ventas.Add(venta);
+
+        await Context.SaveChangesAsync();
+
+        var detalle = new DetalleVenta
+        {
+            VentaId = venta.Id,
+            ProductoApiId = productoApiId,
+            Cantidad = cantidad,
+            Precio = precio
+        };
+
+        Context.DetalleVentas.Add(detalle);
+
+        await Context.SaveChangesAsync();
+
+        venta = new Venta
+        {
+            Estado = "Completada"
+        };
+
+        productoApiId = 0;
+        cantidad = 1;
+        precio = 0;
+
+        await CargarVentas();
+    }
+}
